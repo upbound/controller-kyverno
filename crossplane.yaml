@@ -13,9 +13,9 @@ metadata:
   name: kyverno
 spec:
   packagingType: Helm
-  releaseName: kyverno
-  releaseNamespace: kyverno-system
   helm:
+    releaseName: kyverno
+    releaseNamespace: kyverno-system
     values:
       admissionController:
         initContainer:
