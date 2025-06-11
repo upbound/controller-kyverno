@@ -1,0 +1,4 @@
+CHART_NAME=kyverno
+CHART_VERSION=3.4.2
+RELEASE_NAME=kyverno
+REPO_URL=https://kyverno.github.io/kyverno/

@@ -1,0 +1,6 @@
+apiVersion: pkg.upbound.io/v1alpha1
+kind: Controller
+metadata:
+  name: controller-kyverno
+spec:
+  package: xpkg.upbound.io/upbound/controller-kyverno:${VERSION}

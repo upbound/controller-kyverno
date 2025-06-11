@@ -1,0 +1,53 @@
+apiVersion: meta.pkg.upbound.io/v1alpha1
+kind: Controller
+metadata:
+  annotations:
+    friendly-name.meta.crossplane.io: Controller Kyverno
+    meta.crossplane.io/description: |
+      Kyverno is a cloud native policy engine.
+    meta.crossplane.io/license: Apache-2.0
+    meta.crossplane.io/maintainer: Upbound Maintainers <info@upbound.io>
+    meta.crossplane.io/readme: |
+      Kyverno is a cloud native policy engine.
+    meta.crossplane.io/source: https://github.com/kyverno/kyverno
+  name: kyverno
+spec:
+  packagingType: Helm
+  releaseName: kyverno
+  releaseNamespace: kyverno-system
+  helm:
+    values:
+      admissionController:
+        initContainer:
+          image:
+            registry: xpkg.upbound.io
+            repository: upbound/kyvernopre
+        container:
+          image:
+            registry: xpkg.upbound.io
+            repository: upbound/kyverno
+      backgroundController:
+        image:
+          registry: xpkg.upbound.io
+          repository: upbound/kyverno-background-controller
+      cleanupController:
+        image:
+          registry: xpkg.upbound.io
+          repository: upbound/kyverno-cleanup-controller
+      reportsController:
+        image:
+          registry: xpkg.upbound.io
+          repository: upbound/kyverno-reports-controller
+      webhooksCleanup:
+        image:
+          registry: xpkg.upbound.io
+          repository: upbound/kyverno-kubectl
+      policyReportsCleanup:
+        image:
+          registry: xpkg.upbound.io
+          repository: upbound/kyverno-kubectl
+      crds:
+        migration:
+          image:
+            registry: xpkg.upbound.io
+            repository: upbound/kyverno-cli

@@ -1,0 +1,34 @@
+      admissionController:
+        initContainer:
+          image:
+            registry: xpkg.upbound.io
+            repository: upbound/kyvernopre
+        container:
+          image:
+            registry: xpkg.upbound.io
+            repository: upbound/kyverno
+      backgroundController:
+        image:
+          registry: xpkg.upbound.io
+          repository: upbound/kyverno-background-controller
+      cleanupController:
+        image:
+          registry: xpkg.upbound.io
+          repository: upbound/kyverno-cleanup-controller
+      reportsController:
+        image:
+          registry: xpkg.upbound.io
+          repository: upbound/kyverno-reports-controller
+      webhooksCleanup:
+        image:
+          registry: xpkg.upbound.io
+          repository: upbound/kyverno-kubectl
+      policyReportsCleanup:
+        image:
+          registry: xpkg.upbound.io
+          repository: upbound/kyverno-kubectl
+      crds:
+        migration:
+          image:
+            registry: xpkg.upbound.io
+            repository: upbound/kyverno-cli

@@ -1,0 +1,12 @@
+apiVersion: meta.dev.upbound.io/v1alpha1
+kind: Project
+metadata:
+  name: controller-kyverno
+spec:
+  description: controller-kyverno
+  license: Apache-2.0
+  maintainer: Upbound Maintainers <info@upbound.io>
+  readme: |
+    Test for controller-kyverno
+  repository: xpkg.upbound.io/upbound/controller-kyverno_test
+  source: github.com/upbound/controller-kyverno
