@@ -1,12 +1,16 @@
 apiVersion: meta.dev.upbound.io/v1alpha1
 kind: Project
 metadata:
-  name: controller-kyverno
+  name: addon-kyverno
 spec:
-  description: controller-kyverno
+  apiDependencies:
+  - k8s:
+      version: v1.33.0
+    type: k8s
+  description: addon-kyverno
   license: Apache-2.0
   maintainer: Upbound Maintainers <info@upbound.io>
   readme: |
-    Test for controller-kyverno
-  repository: xpkg.upbound.io/upbound/controller-kyverno_test
-  source: github.com/upbound/controller-kyverno
+    Test for addon-kyverno
+  repository: xpkg.upbound.io/upbound/addon-kyverno_test
+  source: github.com/upbound/addon-kyverno

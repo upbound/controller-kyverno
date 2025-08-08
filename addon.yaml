@@ -1,3 +1,22 @@
+apiVersion: meta.pkg.upbound.io/v1beta1
+kind: AddOn
+metadata:
+  annotations:
+    friendly-name.meta.crossplane.io: Controller Kyverno
+    meta.crossplane.io/description: |
+      Kyverno is a cloud native policy engine.
+    meta.crossplane.io/license: Apache-2.0
+    meta.crossplane.io/maintainer: Upbound Maintainers <info@upbound.io>
+    meta.crossplane.io/readme: |
+      Kyverno is a cloud native policy engine.
+    meta.crossplane.io/source: https://github.com/kyverno/kyverno
+  name: kyverno
+spec:
+  packagingType: Helm
+  helm:
+    releaseName: kyverno
+    releaseNamespace: kyverno-system
+    values:
       admissionController:
         initContainer:
           image:
