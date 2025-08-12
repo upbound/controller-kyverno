@@ -10,6 +10,16 @@ metadata:
     meta.crossplane.io/readme: |
       Kyverno is a cloud native policy engine.
     meta.crossplane.io/source: https://github.com/kyverno/kyverno
+    meta.upbound.io/hardening: |
+      - Backporting
+    meta.upbound.io/host: |
+      - UXP
+      - Spaces
+    meta.upbound.io/subscription: |
+      - Community
+      - Standard
+      - Enterprise
+      - Business Critical    
   name: kyverno
 spec:
   packagingType: Helm
