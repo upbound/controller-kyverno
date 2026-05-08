@@ -51,20 +51,20 @@ up ctp list
 up ctx "${UPBOUND_ORG}/${UPBOUND_SPACE}/${UPBOUND_GROUP}/${UPBOUND_CTP}"
 ```
 
-2. Install the controller:
+2. Install the addon:
 
-   *This installs the controller package into your control plane, which includes the manifests required to run Kyverno.*
+   *This installs the addon package into your control plane, which includes the manifests required to run Kyverno.*
 
 ```bash
 UP_CHART_VERSION=""
 
 cat <<EOF | kubectl apply -f -
   apiVersion: pkg.upbound.io/v1alpha1
-  kind: Controller
+  kind: Addon
   metadata:
-    name: controller-kyverno
+    name: addon-kyverno
   spec:
-    package: xpkg.upbound.io/upbound/controller-kyverno:"${UP_CHART_VERSION}"
+    package: xpkg.upbound.io/upbound/addon-kyverno:"${UP_CHART_VERSION}"
 EOF
 ```
 
