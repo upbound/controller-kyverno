@@ -42,10 +42,6 @@ spec:
         image:
           registry: xpkg.upbound.io
           repository: upbound/kyverno-kubectl
-      policyReportsCleanup:
-        image:
-          registry: xpkg.upbound.io
-          repository: upbound/kyverno-kubectl
       crds:
         migration:
           image:

@@ -25,6 +25,7 @@ fi
 
 MAPPINGS="bitnami/kubectl xpkg.upbound.io/upbound/kyverno-kubectl
 registry.k8s.io/kubectl xpkg.upbound.io/upbound/kyverno-kubectl
+ghcr.io/kyverno/readiness-checker xpkg.upbound.io/upbound/kyverno-kubectl
 reg.kyverno.io/kyverno/background-controller xpkg.upbound.io/upbound/kyverno-background-controller
 reg.kyverno.io/kyverno/cleanup-controller xpkg.upbound.io/upbound/kyverno-cleanup-controller
 reg.kyverno.io/kyverno/kyverno-cli xpkg.upbound.io/upbound/kyverno-cli
