@@ -41,7 +41,7 @@ spec:
       webhooksCleanup:
         image:
           registry: xpkg.upbound.io
-          repository: upbound/kyverno-kubectl
+          repository: upbound/kyverno-readiness-checker
       crds:
         migration:
           image:
