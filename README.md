@@ -51,20 +51,46 @@ up ctp list
 up ctx "${UPBOUND_ORG}/${UPBOUND_SPACE}/${UPBOUND_GROUP}/${UPBOUND_CTP}"
 ```
 
-2. Install the addon:
+2. Install Kyverno:
 
-   *This installs the addon package into your control plane, which includes the manifests required to run Kyverno.*
+   This repository publishes two package flavors built from the same Helm chart.
+   Pick the one that matches where your control plane runs:
+
+   | Host | Kind | Package |
+   |------|------|---------|
+   | Upbound Spaces | `Controller` | `xpkg.upbound.io/upbound/controller-kyverno` |
+   | Upbound Crossplane (UXP) v2 | `AddOn` | `xpkg.upbound.io/upbound/addon-kyverno` |
+
+   `AddOn` requires UXP v2. On Spaces control planes, use the `Controller`
+   package instead.
+
+   **Spaces (`Controller`)**
 
 ```bash
-UP_CHART_VERSION=""
+UP_CHART_VERSION="3.9.0"
 
 cat <<EOF | kubectl apply -f -
-  apiVersion: pkg.upbound.io/v1alpha1
-  kind: Addon
-  metadata:
-    name: addon-kyverno
-  spec:
-    package: xpkg.upbound.io/upbound/addon-kyverno:"${UP_CHART_VERSION}"
+apiVersion: pkg.upbound.io/v1alpha1
+kind: Controller
+metadata:
+  name: controller-kyverno
+spec:
+  package: xpkg.upbound.io/upbound/controller-kyverno:${UP_CHART_VERSION}
+EOF
+```
+
+   **UXP v2 (`AddOn`)**
+
+```bash
+UP_CHART_VERSION="3.9.0"
+
+cat <<EOF | kubectl apply -f -
+apiVersion: pkg.upbound.io/v1beta1
+kind: AddOn
+metadata:
+  name: addon-kyverno
+spec:
+  package: xpkg.upbound.io/upbound/addon-kyverno:${UP_CHART_VERSION}
 EOF
 ```
 
