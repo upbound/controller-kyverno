@@ -2,3 +2,23 @@ CHART_NAME=kyverno
 CHART_VERSION=3.9.2
 RELEASE_NAME=kyverno
 REPO_URL=https://kyverno.github.io/kyverno/
+# This branch ships chart 3.9.2 with Kyverno v1.19.2 rebuilt by us, so the
+# package and image versions are deliberately NOT CHART_VERSION. Bump the -up.N
+# suffix of both for any rebuild; published tags are never overwritten.
+PACKAGE_VERSION=3.9.2-up.1
+IMAGE_TAG=v1.19.2-up.1
+# Rebuild of the upstream Kyverno release tag, source unchanged (see README
+# "Patch builds"). hack/build-images.sh builds KYVERNO_COMMIT and fails if
+# KYVERNO_REF no longer points at it.
+KYVERNO_REF=v1.19.2
+KYVERNO_COMMIT=e63308f1e16c05cd009ac4864be6ec25c66b49be
+# Go 1.26.10 fixes CVE-2026-111943 (crypto/x509) on the 1.26 line that v1.19.2
+# targets (go.mod: go 1.26.9). Upstream v1.19.2 was built with go1.26.9.
+GO_VERSION=1.26.10
+# Kyverno's own ko base (.ko.yaml defaultBaseImage), pinned by digest. The
+# upstream v1.19.2 images were built on an older one whose CA bundle still has
+# the distrusted "emSign ECC Root CA - G3".
+BASE_IMAGE=ghcr.io/wolfi-dev/static:alpine@sha256:d6fd1b74c81dca6fcfcfcd01658dc429f929266b8271d34704a15bab52d17b10
+# ko version upstream v1.19.2 pins in its Makefile (KO_VERSION).
+KO_VERSION=v0.18.2-0.20260320010637-757161aaa19e
+PLATFORMS=linux/amd64,linux/arm64

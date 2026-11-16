@@ -22,28 +22,35 @@ spec:
           image:
             registry: xpkg.upbound.io
             repository: upbound/kyvernopre
+            tag: v1.19.2-up.1
         container:
           image:
             registry: xpkg.upbound.io
             repository: upbound/kyverno
+            tag: v1.19.2-up.1
       backgroundController:
         image:
           registry: xpkg.upbound.io
           repository: upbound/kyverno-background-controller
+          tag: v1.19.2-up.1
       cleanupController:
         image:
           registry: xpkg.upbound.io
           repository: upbound/kyverno-cleanup-controller
+          tag: v1.19.2-up.1
       reportsController:
         image:
           registry: xpkg.upbound.io
           repository: upbound/kyverno-reports-controller
+          tag: v1.19.2-up.1
       webhooksCleanup:
         image:
           registry: xpkg.upbound.io
           repository: upbound/kyverno-readiness-checker
+          tag: v1.19.2-up.1
       crds:
         migration:
           image:
             registry: xpkg.upbound.io
             repository: upbound/kyverno-cli
+            tag: v1.19.2-up.1

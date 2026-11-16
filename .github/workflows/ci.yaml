@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'main'
+      - 'release-*'
     paths-ignore:
       - 'docs/**'
       - 'mkdocs.yml'
@@ -16,12 +17,35 @@ env:
   UP_ORG: ${{ secrets.UP_ORG }}
 
 jobs:
-  mirror-images:
-    name: Mirror Images
+  # This branch doesn't mirror upstream images: it rebuilds Kyverno from the
+  # upstream release tag (see README "Patch builds" and .chart-attributes).
+  build-images:
+    name: Build Images
     runs-on: ubuntu-latest
+    outputs:
+      image-tag: ${{ steps.tag.outputs.image-tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Load build attributes
+        id: tag
+        run: |
+          source .chart-attributes
+          echo "GO_VERSION=$GO_VERSION" >> "$GITHUB_ENV"
+          # PR builds get a commit suffix, so a release tag is only ever pushed
+          # from the release branch, and never twice.
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            echo "image-tag=${IMAGE_TAG}-$(echo "$GITHUB_SHA" | cut -c1-7)" >> "$GITHUB_OUTPUT"
+          else
+            echo "image-tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: false
 
       - name: Install crane
         uses: imjasonh/setup-crane@v0.1
@@ -33,20 +57,17 @@ jobs:
           username: ${{ env.UP_ROBOT_ID }}
           password: ${{ env.UP_API_TOKEN }}
 
-      - name: Mirror images to xpkg.upbound.io
+      - name: Build and push images
         if: env.UP_API_TOKEN != ''
-        run: |
-          # Install helm images plugin
-          helm plugin install https://github.com/nikhilsbhat/helm-images
+        run: bash hack/build-images.sh "${{ steps.tag.outputs.image-tag }}"
 
-          # Load chart attributes
-          source .chart-attributes
-
-          bash hack/sync-images.sh $CHART_VERSION $REPO_URL
+      - name: Check images (Go version, CA bundle, base image)
+        if: env.UP_API_TOKEN != ''
+        run: bash hack/check-images.sh "${{ steps.tag.outputs.image-tag }}"
 
   publish-image:
     name: Publish Image
-    needs: mirror-images
+    needs: build-images
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -63,7 +84,7 @@ jobs:
       - name: Set up Helm
         uses: azure/setup-helm@v4
         with:
-          version: 'latest'
+          version: 'v3.22.1'
 
       - name: Install yq
         uses: dcarbone/install-yq-action@v1
@@ -88,12 +109,24 @@ jobs:
       - name: Build and Publish
         working-directory: ${{ matrix.package-type }}-package
         if: env.UP_API_TOKEN != ''
+        env:
+          BUILD_IMAGE_TAG: ${{ needs.build-images.outputs.image-tag }}
         run: |
           # Load chart attributes
           source ../.chart-attributes
           cp ../${{ matrix.package-type }}.yaml crossplane.yaml
 
-          echo "Using CHART_VERSION: $CHART_VERSION"
+          # PR builds point the package at the PR's images.
+          if [[ "$BUILD_IMAGE_TAG" != "$IMAGE_TAG" ]]; then
+            sed -i "s/tag: ${IMAGE_TAG}\$/tag: ${BUILD_IMAGE_TAG}/" crossplane.yaml
+          fi
+          if [[ "$(yq '[.. | select(has("tag")) | .tag] | unique | join(" ")' crossplane.yaml)" != "$BUILD_IMAGE_TAG" ]]; then
+            echo "crossplane.yaml image tags don't all match $BUILD_IMAGE_TAG" >&2
+            yq '.. | select(has("tag")) | .tag' crossplane.yaml >&2
+            exit 1
+          fi
+
+          echo "Using CHART_VERSION: $CHART_VERSION, PACKAGE_VERSION: $PACKAGE_VERSION"
 
           # Pull the chart
           helm pull $CHART_NAME --repo $REPO_URL --version $CHART_VERSION
@@ -125,21 +158,22 @@ jobs:
           # Detect if running in a PR context
           if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
             COMMIT_ID=$(echo "$GITHUB_SHA" | cut -c1-7)
-            CHART_VERSION="${CHART_VERSION}-${COMMIT_ID}"
+            PACKAGE_VERSION="${PACKAGE_VERSION}-${COMMIT_ID}"
           fi
 
           echo "UP_ORG=$UP_ORG" >> $GITHUB_ENV
           echo "CONTROLLER_NAME=$CONTROLLER_NAME" >> $GITHUB_ENV
-          echo "CHART_VERSION=$CHART_VERSION" >> $GITHUB_ENV
+          echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
 
-          up xpkg push xpkg.upbound.io/$UP_ORG/$CONTROLLER_NAME:$CHART_VERSION -f $XPKG_FILENAME
+          up xpkg push xpkg.upbound.io/$UP_ORG/$CONTROLLER_NAME:$PACKAGE_VERSION -f $XPKG_FILENAME
 
       - name: Append package assets for Marketplace
+        if: env.UP_API_TOKEN != ''
         run: |
           extensions_dir=${{ github.workspace }}/extensions
           mkdir -p $extensions_dir/readme
           cp ./README.md $extensions_dir/readme/readme.md
-          up alpha xpkg append xpkg.upbound.io/${{ env.UP_ORG }}/${{ env.CONTROLLER_NAME }}:${{ env.CHART_VERSION }} --extensions-root $extensions_dir          
+          up alpha xpkg append xpkg.upbound.io/${{ env.UP_ORG }}/${{ env.CONTROLLER_NAME }}:${{ env.PACKAGE_VERSION }} --extensions-root $extensions_dir
 
   run-e2e-tests:
     name: Run e2e Tests
@@ -175,7 +209,7 @@ jobs:
           # Detect if running in a PR context
           if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
             COMMIT_ID=$(echo "$GITHUB_SHA" | cut -c1-7)
-            CHART_VERSION="${CHART_VERSION}-${COMMIT_ID}"
+            PACKAGE_VERSION="${PACKAGE_VERSION}-${COMMIT_ID}"
           fi
 
-          UP_CHART_VERSION=$CHART_VERSION up test run tests/* --e2e --local
+          UP_CHART_VERSION=$PACKAGE_VERSION up test run tests/* --e2e --local
