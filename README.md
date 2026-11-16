@@ -67,7 +67,7 @@ up ctx "${UPBOUND_ORG}/${UPBOUND_SPACE}/${UPBOUND_GROUP}/${UPBOUND_CTP}"
    **Spaces (`Controller`)**
 
 ```bash
-UP_CHART_VERSION="3.9.0"
+UP_CHART_VERSION="3.10.0"
 
 cat <<EOF | kubectl apply -f -
 apiVersion: pkg.upbound.io/v1alpha1
@@ -82,7 +82,7 @@ EOF
    **UXP v2 (`AddOn`)**
 
 ```bash
-UP_CHART_VERSION="3.9.0"
+UP_CHART_VERSION="3.10.0"
 
 cat <<EOF | kubectl apply -f -
 apiVersion: pkg.upbound.io/v1beta1
@@ -93,6 +93,29 @@ spec:
   package: xpkg.upbound.io/upbound/addon-kyverno:${UP_CHART_VERSION}
 EOF
 ```
+
+## Upgrading to 3.10.0 (Kyverno 1.20)
+
+Kyverno 1.20 no longer enforces the legacy `kyverno.io` policy types
+(`ClusterPolicy`, `Policy`, `CleanupPolicy`, `ClusterCleanupPolicy` and
+`kyverno.io/v2` `PolicyException`), and it denies creating new ones. Their CRDs
+stay, so existing objects can still be read, exported and deleted.
+
+The chart blocks the install or upgrade while any of these objects exist, with
+a render-time check and a pre-install/pre-upgrade hook Job. The package installs
+the chart with a regular Helm install/upgrade, so both run. Before upgrading,
+check for legacy policies:
+
+```bash
+kubectl get clusterpolicies.kyverno.io,policies.kyverno.io,cleanuppolicies.kyverno.io,clustercleanuppolicies.kyverno.io -A
+kubectl get policyexceptions.v2.kyverno.io -A
+```
+
+Migrate them to the `policies.kyverno.io` types first (see the
+[migration guide](https://kyverno.io/docs/guides/migration-to-cel/)). To upgrade
+anyway, accepting that the legacy policies are no longer enforced, set
+`upgrade.acknowledgeLegacyPoliciesNotEnforced: true` in the Helm values of a
+`ControllerRuntimeConfig` / `AddOnRuntimeConfig`.
 
 ## Development
 

@@ -57,3 +57,8 @@ spec:
           image:
             registry: xpkg.upbound.io
             repository: upbound/kyverno-cli
+      upgrade:
+        legacyPolicyCheck:
+          image:
+            registry: xpkg.upbound.io
+            repository: upbound/kyverno-cli
