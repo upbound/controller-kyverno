@@ -67,7 +67,7 @@ up ctx "${UPBOUND_ORG}/${UPBOUND_SPACE}/${UPBOUND_GROUP}/${UPBOUND_CTP}"
    **Spaces (`Controller`)**
 
 ```bash
-UP_CHART_VERSION="3.9.0"
+UP_CHART_VERSION="3.9.2-up.1"
 
 cat <<EOF | kubectl apply -f -
 apiVersion: pkg.upbound.io/v1alpha1
@@ -82,7 +82,7 @@ EOF
    **UXP v2 (`AddOn`)**
 
 ```bash
-UP_CHART_VERSION="3.9.0"
+UP_CHART_VERSION="3.9.2-up.1"
 
 cat <<EOF | kubectl apply -f -
 apiVersion: pkg.upbound.io/v1beta1
@@ -93,6 +93,30 @@ spec:
   package: xpkg.upbound.io/upbound/addon-kyverno:${UP_CHART_VERSION}
 EOF
 ```
+
+## Patch builds (`release-3.9`)
+
+`3.9.2-up.1` is chart 3.9.2 (Kyverno v1.19.2) with every image rebuilt by
+Upbound, for clusters that can't move to Kyverno 1.20 yet. 1.20 stops enforcing
+the legacy `kyverno.io` policy types (`ClusterPolicy`, `Policy`, ...); see the
+`main` branch README before upgrading to 3.10.0 or later.
+
+The upstream v1.19.2 images are built with Go 1.26.9 on a base image whose CA
+bundle still contains the distrusted `emSign ECC Root CA - G3`, so they are
+exposed to CVE-2026-111943. The rebuild changes nothing in Kyverno itself:
+
+- Source: the upstream `v1.19.2` tag, pinned by commit (`KYVERNO_COMMIT`).
+- Toolchain: Go 1.26.10 (`GO_VERSION`), which fixes CVE-2026-111943.
+- Base image: Kyverno's own ko base, `ghcr.io/wolfi-dev/static:alpine`, at a
+  current digest (`BASE_IMAGE`) without the distrusted roots.
+- Build: upstream's ko flags, for `linux/amd64` and `linux/arm64`, pushed as
+  `xpkg.upbound.io/upbound/<image>:v1.19.2-up.1`.
+
+CI builds the images (`hack/build-images.sh`) and checks every image and
+platform for the Go version, the CA bundle and the base image
+(`hack/check-images.sh`) before it publishes the package. A rebuild bumps
+`-up.N` in `PACKAGE_VERSION` and `IMAGE_TAG`; published tags are never
+overwritten.
 
 ## Development
 
