@@ -26,6 +26,14 @@ jobs:
       - name: Install crane
         uses: imjasonh/setup-crane@v0.1
 
+      # The runner's preinstalled Helm is now v4, which refuses to install the
+      # unsigned helm-images plugin. Pin Helm 3, the major the AddOn/Controller
+      # reconcilers use.
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: 'v3.22.1'
+
       - name: Login to xpkg with robot
         uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
         with:
